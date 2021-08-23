@@ -12,7 +12,7 @@ export default function Filter({
   toggleColourFilters,
   toggleCategoryFilters,
   handlePriceFilters,
-  filterByPrice,
+  filterPrice,
   priceRange,
 }) {
   return (
@@ -90,7 +90,7 @@ export default function Filter({
               type="button"
               value="Set"
               className={style.button}
-              onClick={filterByPrice}
+              onClick={filterPrice}
             />
           </div>
         </div>

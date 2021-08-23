@@ -7,7 +7,7 @@ import Title from "antd/lib/typography/Title";
 export default function Index() {
   const {items, loading, ...others} = useFilter();
   return (
-    <div>
+    <div className={style.filter_container}>
       <Row justify="center">
         <Col xs={22} md={21} lg={18}>
           <div

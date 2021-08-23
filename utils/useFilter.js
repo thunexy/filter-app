@@ -27,10 +27,10 @@ const categories = [
   "Tall Boots",
 ];
 export function useFilter() {
+  const _isMounted = useRef(null);
   const initialPayload = data?.data?.allContentfulProductPage?.edges;
   const [loading, setLoading] = useState(true);
   const [payload, setPayload] = useState(initialPayload);
-  const _isMounted = useRef(null);
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [items, setItems] = useState([]);
@@ -40,6 +40,7 @@ export function useFilter() {
   const [priceRange, setPriceRange] = useState({min: null, max: null});
 
   const getCurentList = (list = payload) => {
+    //handle current page list based on pageNo and pageSize
     setLoading(true);
     _isMounted.current &&
       setItems(() => {
@@ -55,80 +56,75 @@ export function useFilter() {
       });
   };
 
+  const filterByColor = (data) => {
+    return data.filter((item) =>
+      selectedColours.includes(item.node?.colorFamily?.[0]?.name)
+    );
+  };
+  const filterByCategory = (arr) => {
+    let data = [];
+    arr.forEach((item) => {
+      selectedCategories.forEach((selectedCategory) => {
+        item?.node?.categoryTags?.forEach((categories, i) => {
+          if (categories.includes(selectedCategory)) {
+            data.push(item);
+          }
+        });
+      });
+    });
+    return data;
+  };
+
+  const filterByPrice = (arr) => {
+    return arr.filter((item) => {
+      const itemPrice =
+        +item?.node?.shopifyProductEu?.variants?.edges?.[0]?.node?.price;
+      return priceRange.min && !priceRange.max
+        ? itemPrice >= priceRange.min
+        : !priceRange.min && priceRange.max
+        ? itemPrice <= priceRange.max
+        : itemPrice >= priceRange.min && itemPrice <= priceRange.max;
+    });
+  };
+
   const _handleFilters = () => {
     let filteredData = [];
-    const data = [...initialPayload];
-    const filterColor = (arr) =>
-      arr.filter((item) =>
-        selectedColours.includes(item.node?.colorFamily?.[0]?.name)
-      );
-    const filterCategory = (arr) => {
-      arr.forEach((item) => {
-        for (let i = 0; i < selectedCategories.length; i++) {
-          for (let j = 0; j < item?.node?.categoryTags?.length; j++) {
-            if (item?.node?.categoryTags?.[j].includes(selectedCategories[i])) {
-              filteredData.push(item);
-            }
-          }
-        }
-      });
-    };
-    const filterByColorAndCategory = (arr) => {
-      filteredData = filterColor(arr);
-      let tempData = [];
-      filteredData.forEach((item) => {
-        for (let i = 0; i < selectedCategories.length; i++) {
-          for (let j = 0; j < item?.node?.categoryTags?.length; j++) {
-            if (item?.node?.categoryTags?.[j].includes(selectedCategories[i])) {
-              tempData.push(item);
-            }
-          }
-        }
-      });
-      filteredData = tempData;
-    };
-    const filterByPrice = () => {
-      return filteredData.filter((item) => {
-        const itemPrice =
-          +item?.node?.shopifyProductEu?.variants?.edges?.[0]?.node?.price;
-        return priceRange.min && !priceRange.max
-          ? itemPrice >= priceRange.min
-          : !priceRange.min && priceRange.max
-          ? itemPrice <= priceRange.max
-          : itemPrice >= priceRange.min && itemPrice <= priceRange.max;
-      });
-    };
+    const rawData = [...initialPayload];
     if (selectedColours.length && !selectedCategories.length) {
-      filteredData = filterColor(data);
+      filteredData = filterByColor(rawData);
     } else if (selectedCategories.length && !selectedColours.length) {
-      filterCategory(data);
+      filteredData = filterByCategory(rawData);
     } else if (selectedCategories.length && selectedColours.length) {
-      filterByColorAndCategory(data);
+      filteredData = filterByCategory(filterByColor(rawData));
     } else {
       filteredData = [...initialPayload];
     }
     if (priceRange.min || priceRange.max) {
-      const data = filterByPrice(filteredData);
-      filteredData = data;
+      filteredData = filterByPrice(filteredData);
     }
-    setPayload(filteredData);
+    _isMounted.current && setPayload(filteredData);
     return getCurentList(filteredData);
   };
 
   const handlePageSize = (_, size) => {
+    //set custom page size
     _isMounted.current && setPageSize(size);
   };
 
   const displayFilters = () => {
+    //show filters
     _isMounted.current && setShowFilters(true);
   };
 
   const hideFilters = () => {
+    //hide filters
     _isMounted.current && setShowFilters(false);
   };
 
   const toggleColourFilters = (colour) => {
     let arr = [];
+    //check if colour is not selected
+    //if so, add. Else remove on re-click
     if (selectedColours.includes(colour)) {
       arr = [...selectedColours].filter((item) => item !== colour);
     } else {
@@ -139,6 +135,8 @@ export function useFilter() {
 
   const toggleCategoryFilters = (category) => {
     let arr = [];
+    //check if category is not selected. If so add
+    //Else remove
     if (selectedCategories.includes(category)) {
       arr = [...selectedCategories].filter((item) => item !== category);
     } else {
@@ -147,11 +145,10 @@ export function useFilter() {
     _isMounted.current && setSelectedCategories(arr);
   };
 
-  const filterByPrice = () => {
-    _handleFilters();
-  };
+  const filterPrice = _handleFilters;
 
   const handlePriceFilters = (min, max) => {
+    //save price range
     _isMounted.current &&
       setPriceRange((price) => ({
         min: min ?? price.min,
@@ -160,15 +157,18 @@ export function useFilter() {
   };
 
   useEffect(() => {
+    //filter when price and /or category changes
     _handleFilters();
   }, [selectedCategories, selectedColours]);
 
   useEffect(() => {
+    //get current list when pageNo or page size changes
     getCurentList();
   }, [pageNo, pageSize]);
 
   useEffect(() => {
     _isMounted.current = true;
+    //get list on page load
     getCurentList();
     return () => {
       _isMounted.current = false;
@@ -192,7 +192,7 @@ export function useFilter() {
     toggleCategoryFilters,
     handlePriceFilters,
     priceRange,
-    filterByPrice,
+    filterPrice,
     loading,
   };
 }
