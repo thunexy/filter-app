@@ -16,7 +16,7 @@
 }
 
 .filter_container {
-  position: relative;
+  position: fixed;
   height: 100%;
   min-height: 100vh;
   background: #fafafa;
