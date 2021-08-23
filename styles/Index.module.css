@@ -1,0 +1,16 @@
+.item_name {
+
+}
+
+.item_price {
+  text-align: right;
+}
+
+.pagination_container {
+  margin-top: 32px;
+}
+
+.filter_text {
+  text-decoration: underline;
+  margin: 40px 0 20px 0;
+}
