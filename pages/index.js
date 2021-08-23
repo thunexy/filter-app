@@ -5,7 +5,7 @@ import Pagination from "../components/Pagination";
 import Filter from "../components/Filter";
 import Title from "antd/lib/typography/Title";
 export default function Index() {
-  const {items, ...others} = useFilter();
+  const {items, loading, ...others} = useFilter();
   return (
     <div>
       <Row justify="center">
@@ -28,7 +28,17 @@ export default function Index() {
               {xs: 20, sm: 16, md: 48, lg: 64},
             ]}
           >
-            {items.length ? (
+            {loading ? (
+              <div
+                style={{
+                  padding: "80px 0 80px 0",
+                  textAlign: "center",
+                  width: "100%",
+                }}
+              >
+                <Title level={4}>Loading...</Title>
+              </div>
+            ) : items.length ? (
               items?.map((item, i) => {
                 return (
                   <Col xs={24} sm={12} md={8} lg={6} key={`${i}`}>
@@ -45,7 +55,13 @@ export default function Index() {
                 );
               })
             ) : (
-              <div style={{padding: '80px 0 80px 0', textAlign: 'center', width: '100%'}}>
+              <div
+                style={{
+                  padding: "80px 0 80px 0",
+                  textAlign: "center",
+                  width: "100%",
+                }}
+              >
                 <Title level={4}>Your search does not match any item</Title>
               </div>
             )}

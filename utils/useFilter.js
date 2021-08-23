@@ -28,26 +28,31 @@ const categories = [
 ];
 export function useFilter() {
   const initialPayload = data?.data?.allContentfulProductPage?.edges;
+  const [loading, setLoading] = useState(true);
   const [payload, setPayload] = useState(initialPayload);
   const _isMounted = useRef(null);
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [items, setItems] = useState([]);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [selectedColours, setSelectedColours] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [priceRange, setPriceRange] = useState({min: null, max: null});
 
   const getCurentList = (list = payload) => {
+    setLoading(true);
     _isMounted.current &&
-      setItems(
-        list.slice((pageNo - 1) * pageSize, pageNo * pageSize).map((item) => ({
-          name: item?.node?.name,
-          price:
-            item?.node?.shopifyProductEu?.variants?.edges?.[0]?.node?.price,
-          imageUrl: `https:${item?.node?.thumbnailImage?.file?.url}`,
-        }))
-      );
+      setItems(() => {
+        setLoading(false);
+        return list
+          .slice((pageNo - 1) * pageSize, pageNo * pageSize)
+          .map((item) => ({
+            name: item?.node?.name,
+            price:
+              item?.node?.shopifyProductEu?.variants?.edges?.[0]?.node?.price,
+            imageUrl: `https:${item?.node?.thumbnailImage?.file?.url}`,
+          }));
+      });
   };
 
   const _handleFilters = () => {
@@ -188,5 +193,6 @@ export function useFilter() {
     handlePriceFilters,
     priceRange,
     filterByPrice,
+    loading,
   };
 }
