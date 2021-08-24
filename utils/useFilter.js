@@ -65,11 +65,9 @@ export function useFilter() {
     let data = [];
     arr.forEach((item) => {
       selectedCategories.forEach((selectedCategory) => {
-        item?.node?.categoryTags?.forEach((categories, i) => {
-          if (categories.includes(selectedCategory)) {
-            data.push(item);
-          }
-        });
+        if (item?.node?.categoryTags?.includes(selectedCategory)) {
+          data.push(item);
+        }
       });
     });
     return data;
